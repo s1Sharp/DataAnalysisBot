@@ -1,2 +1,6 @@
 .idea
 /venv
+/My.txt
+/env
+.gitingore
+/.vscode
