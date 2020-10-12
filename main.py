@@ -1,6 +1,10 @@
 import telebot
 #import config
 
+"""
+    комментарий
+"""
+
 bot = telebot.TeleBot('1027337352:AAHfDMuVygTgw39-oU1YVsFkSz3PJL6GSOA')
 
 
