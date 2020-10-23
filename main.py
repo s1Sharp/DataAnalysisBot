@@ -14,11 +14,13 @@ def get_info(message):
 
 def get_name(message): #получаем фамилию
     name = message.text;
+    print(name)
     bot.send_message(message.from_user.id, 'Какая у тебя фамилия?');
     bot.register_next_step_handler(message, get_surnme);
 
 def get_surname(message):
     surname = message.text;
+    print(surname)
     bot.send_message('Сколько тебе лет?');
     bot.register_next_step_handler(message, get_age);
 
@@ -63,11 +65,15 @@ def callback_worker(call):
     if call.data == "yes": #call.data это callback_data, которую мы указали при объявлении кнопки
         bot.send_message(call.message.chat.id, 'Запомню : )');
     elif call.data == "get-reg":
-        get_info(message=['reg'])
+        get_info(command = ['reg'] )
 
 
 bot.polling(none_stop=True, interval= 3) 
 
+
+def main():
+    LOGGER.log('bot is running...')
+    bot.infinity_polling()
 
 if __name__ == '__main__':  
     try:
