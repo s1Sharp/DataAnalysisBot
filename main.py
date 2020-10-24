@@ -1,6 +1,7 @@
 import telebot
 from BotCommands import *
 
+
 bot = telebot.TeleBot(tiket)
 
 
@@ -69,7 +70,6 @@ def callback_worker(call):
 
 
 bot.polling(none_stop=True, interval= 3) 
-
 
 def main():
     LOGGER.log('bot is running...')
