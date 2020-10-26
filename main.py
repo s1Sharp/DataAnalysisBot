@@ -76,7 +76,6 @@ def callback_worker(call):
 
 bot.polling(none_stop=True, interval= 3) 
 
-
 def main():
     bot.infinity_polling()
 
