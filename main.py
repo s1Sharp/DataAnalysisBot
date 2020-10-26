@@ -1,6 +1,8 @@
 import telebot
+from  session import Session
 from BotCommands import *
 
+current_session = Session("")
 
 bot = telebot.TeleBot(tiket)
 
@@ -44,6 +46,9 @@ def help_command(message):
 
 @bot.message_handler(commands=['start'])  
 def start_command(message):
+    if not (current_session.check_reg_id(message.chat.id)):
+        current_session.addUserId(message.chat.id)
+        current_session.save_session()
     keyboard = telebot.types.InlineKeyboardMarkup()  
     keyboard.row(  
         telebot.types.InlineKeyboardButton('Войти', callback_data='get-in')  
@@ -72,7 +77,6 @@ def callback_worker(call):
 bot.polling(none_stop=True, interval= 3) 
 
 def main():
-    LOGGER.log('bot is running...')
     bot.infinity_polling()
 
 if __name__ == '__main__':  
