@@ -1,5 +1,9 @@
 import telebot
-from  session import Session
+
+import users
+import database_handler
+"""
+from session import Session
 from BotCommands import *
 
 current_session = Session("")
@@ -76,11 +80,13 @@ def callback_worker(call):
 
 bot.polling(none_stop=True, interval= 3) 
 
+
 def main():
     bot.infinity_polling()
+"""
 
-if __name__ == '__main__':  
-    try:
-        main()
-    except KeyboardInterrupt:
-        exit()
+if __name__ == '__main__':
+    db_handler = database_handler.DataBaseHandler("db_bot.db")
+    student = users.Student(1, "vasily", "lapinsky", 811, "VALapinskij@stud.kpfu.ru")
+    db_handler.add_student(student)
+    print(db_handler.select_all("student"))

@@ -23,16 +23,14 @@ class Session:
 
 
 class user:
-    def __init__(self,name, surname, grop,
-                                classes = [] # classes = []
-                                user_id,):
-        self.name    = name
+    def __init__(self,name, surname, grop, user_id, classes = []):
+        self.name = name
         self.surname = surname
-        self.grop    = grop 
+        self.grop = grop
         self.classes = classes
         self.user_id = user_id
     
-    def check_reg_id(self,session):
+    def check_reg_id(self, user_id):
         if user_id in self.all_users_id:
             return True
         else:
