@@ -1,8 +1,0 @@
-.idea
-/venv
-/My.txt
-/env
-.gitingore
-/.vscode
-/test.py
-/__pycache__
