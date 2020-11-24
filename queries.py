@@ -1,6 +1,7 @@
 import psycopg2
 
-# нужно менять на своем компьютере
+
+# не забыть поменять на системе
 def connection():
     con = psycopg2.connect(
         database="pgbot",
