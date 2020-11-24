@@ -1,11 +1,12 @@
 import psycopg2
 
+
 # не забыть поменять на системе
 def connection():
     con = psycopg2.connect(
         database="pgbot",
         user="postgres",
-        password="1111",
+        password="vasia",
         host="127.0.0.1",
         port="5432"
     )
