@@ -22,12 +22,12 @@ async def start(message: types.Message):
 async def start(message: types.Message):
     await message.answer("*Команды для студентов:\n"
                          "1)/reg - Начать регистрацию пользователя\n"
-                         "2)/jointhecourse - поступить на курс\n"
-                         "3)/infoaboutme - получить информацию о себе\n"
-                         "4)/getmygrades получить оценки по предмету\n"
+                         "2)/jointhecourse - поступить на курс\n"       
+                         "3)/infoaboutme - получить информацию о себе\n"        #в разработке
+                         "4)/getmygrades получить оценки по предмету\n"         #в разработке
                          "5)/leavethecours - покинуть курс\n"
                          "*Команды для преподавателя:\n"
-                         "1)/teacher - стать администратором курса\n")
+                         "1)/teacher - стать администратором курса\n")          #в разработке
 
 
 @dp.message_handler(Command("reg"), state=None)
