@@ -23,7 +23,6 @@ class LeaveCourse(StatesGroup):
     Q1 = State()
     Q2 = State()
 
-
 class GetGrades(StatesGroup):
     Q1 = State()
     Q2 = State()

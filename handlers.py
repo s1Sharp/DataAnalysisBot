@@ -169,7 +169,6 @@ async def answer_q1(message: types.Message, state: FSMContext):
         await message.answer('Что-то пошло не так....')
     await state.finish()
 
-
 # -------------------------------------------------------------------------------------------------------------
 
 

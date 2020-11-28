@@ -1,5 +1,6 @@
 import psycopg2
 
+
 # не забыть поменять на системе
 def connection():
     con = psycopg2.connect(
