@@ -1,6 +1,8 @@
-.idea
-/venv
-/My.txt
-/env
-.gitingore
-/.vscode
+# Created by .ignore support plugin (hsz.mobi)
+.idea/dbnavigator.xml
+venv/Include/
+venv/Scripts/python_d.exe
+venv/Scripts/pythonw_d.exe
+/venv/
+__pycache__/loader.cpython-39.pyc
+/.idea/
