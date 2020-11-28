@@ -6,3 +6,4 @@ venv/Scripts/pythonw_d.exe
 /venv/
 __pycache__/loader.cpython-39.pyc
 /__pycache__/
+/.idea/
