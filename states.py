@@ -32,3 +32,6 @@ class GetGrades(StatesGroup):
 
 class StudentStatForClass(StatesGroup):
     Q1 = State()
+
+class GetTop5(StatesGroup):
+    Q1 = State()
