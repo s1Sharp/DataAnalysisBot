@@ -28,3 +28,7 @@ class GetGrades(StatesGroup):
     Q2 = State()
     Q3 = State()
     Q4 = State()
+
+
+class StudentStatForClass(StatesGroup):
+    Q1 = State()

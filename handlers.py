@@ -7,7 +7,7 @@ from loader import dp
 from queries import insert_new_student, check_telegramdi_in_student_course, get_cid_by_name, join_to_course, \
     check_course_pass, insert_new_teacher, insert_new_teacher_course, leave_course, get_info_about_me, get_cid_by_tid, \
     get_list_of_student_from_cours, assign_grades, get_my_grades
-from states import Registration, RegistrationTeacherOnCourse, LeaveCourse, GetGrades
+from states import Registration, RegistrationTeacherOnCourse, LeaveCourse, GetGrades, StudentStatForClass
 from states import RegisterForClasses
 import pandas as pd
 import math
@@ -27,11 +27,15 @@ async def start(message: types.Message):
                          "3)/infoaboutme - получить информацию о себе\n"
                          "4)/getmygrades получить оценки по предмету\n"
                          "5)/leavethecours - покинуть курс\n"
+                         "6)/getmystats - получить среднюю оценку по курсу\n"
                          "*Команды для преподавателя:\n"
                          "1)/teacher - стать администратором курса\n"
                          "2)/liststudents - получить excel файл с списком студентов, для выставления оценок\n"
                          "3)/assigngrades - выставить оценки из файла пункта (2)\n"
-                         "4)/getjurnal - получить журнал с оценками")
+                         "4)/getjurnal - получить журнал с оценками\n"
+                         "5)/getcoursestats - получить среднюю оценку по курсу\n"
+                         "6)getnumberofstudents - получить кол-во студентов\n"
+                         "7)/gettop5 - получить топ 5 студентов по оценкам\n")
 
 
 @dp.message_handler(Command("reg"), state=None)
@@ -110,6 +114,36 @@ async def answer_q1(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+@dp.message_handler(Command("getmystats"), state=None)
+async def get_grades(message: types.Message):
+    await message.reply("Статистику по какому предмету вы хотите получить?", reply_markup=course_markup)
+    await StudentStatForClass.Q1.set()
+
+
+@dp.message_handler(state=StudentStatForClass.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        # получаем ответ
+        answer = message.text
+        # проверяем входные параметры
+        cid = get_cid_by_name(answer)
+        grades = get_my_grades(message.from_user.id, cid, 1)
+        # Получаем оценки
+        g = []
+        for i in grades:
+            g.append(i[3])
+        # считаем среднее арифметическое
+        if len(g) != 0:
+            stats = sum(g)/len(g)
+        else:
+            stats = 0
+        # Отсылаем ответ пользователю
+        await message.answer("Ваша средняя оценка по курсу " + stats, reply_markup=ReplyKeyboardRemove())
+    except:
+        await message.answer('Что-то пошло не так....')
+    await state.finish()
+
+
 @dp.message_handler(Command("infoaboutme"))
 async def enter_test(message: types.Message):
     info = get_info_about_me(message.from_user.id)[0]
@@ -168,6 +202,7 @@ async def answer_q1(message: types.Message, state: FSMContext):
     except:
         await message.answer('Что-то пошло не так....')
     await state.finish()
+
 
 # -------------------------------------------------------------------------------------------------------------
 
@@ -307,6 +342,58 @@ async def enter_test(message: types.Message):
         await message.answer('....')
 
 
+@dp.message_handler(Command("getcoursestats"))
+async def enter_test(message: types.Message):
+    try:
+        cid = get_cid_by_tid(message.from_user.id)
+        list_of_students = get_list_of_student_from_cours(cid)
+        list_of_marks = []
+        for student in list_of_students:
+            grades = get_my_grades(student[0], cid, 1)
+            if len(grades) == 0:
+                list_of_marks.append(0)
+            else:
+                list_of_marks.append(sum(grades)/len(grades))
+
+        result = sum(list_of_marks)/len(list_of_marks)
+        await message.answer("Средняя оценка по курсу: "+result)
+    except:
+        await message.answer('Что-то пошло не так...')
+
+
+@dp.message_handler(Command("getnumberofstudents"))
+async def enter_test(message: types.Message):
+    try:
+        cid = get_cid_by_tid(message.from_user.id)
+        list_of_students = get_list_of_student_from_cours(cid)
+        await message.answer("Количество студентов на курсе:\n"+len(list_of_students))
+    except:
+        await message.answer('Что-то пошло не так...')
+
+
+@dp.message_handler(Command("gettop5"))
+async def enter_test(message: types.Message):
+    try:
+        cid = get_cid_by_tid(message.from_user.id)
+        list_of_students = get_list_of_student_from_cours(cid)
+        list_of_student_marks = []
+        for student in list_of_students:
+            grades = get_my_grades(student[0], cid, 1)
+            if len(grades) == 0:
+                list_of_student_marks.append((student[0], 0))
+            else:
+                list_of_student_marks.append((student[0], sum(grades) / len(grades)))
+
+        top5 = sorted(list_of_student_marks, key=lambda res: res[1])
+        result = ""
+        for res in top5:
+            info = get_info_about_me(res[0])[0]
+            result = result + f"{info[1]} {info[2]} : {res[1]}\n"
+        await message.answer("Топ 5 студентов п ооценкам:\n"+result)
+    except:
+        await message.answer('Что-то пошло не так...')
+
+
 @dp.message_handler()
 async def bullshit(message: types.Message):
     await message.answer("Пиши по делу)")
@@ -316,3 +403,4 @@ async def bullshit(message: types.Message):
 
 # Вариант завершения 3 - без стирания данных в data
 # await state.reset_state(with_data=False)
+
