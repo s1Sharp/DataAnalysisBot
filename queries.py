@@ -6,7 +6,7 @@ def connection():
     con = psycopg2.connect(
         database="pgbot",
         user="postgres",
-        password="vasia",
+        password="ZuzuZuzu",
         host="127.0.0.1",
         port="5432"
     )
