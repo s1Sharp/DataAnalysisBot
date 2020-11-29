@@ -7,5 +7,5 @@ venv/Scripts/pythonw_d.exe
 __pycache__/loader.cpython-39.pyc
 /__pycache__/
 /.idea/
-.idea
-__pycache__
+.idea/
+__pycache__/
