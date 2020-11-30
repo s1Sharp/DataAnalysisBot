@@ -4,10 +4,10 @@ import psycopg2
 # не забыть поменять на системе
 def connection():
     con = psycopg2.connect(
-        database="pgbot",
-        user="postgres",
-        password="vasia",
-        host="127.0.0.1",
+        database="ddr8g26b8lc8s",
+        user="ahxnlpmvxeyuwy",
+        password="33fc5a883cecf2bbce39af7b44cf86f0a278ca86226940b17bdcdaced99ebde3",
+        host="ec2-176-34-114-78.eu-west-1.compute.amazonaws.com",
         port="5432"
     )
     return con
