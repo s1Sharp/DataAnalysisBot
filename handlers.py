@@ -7,7 +7,8 @@ from loader import dp
 from queries import insert_new_student, check_telegramdi_in_student_course, get_cid_by_name, join_to_course, \
     check_course_pass, insert_new_teacher, insert_new_teacher_course, leave_course, get_info_about_me, get_cid_by_tid, \
     get_list_of_student_from_cours, assign_grades, get_my_grades
-from states import Registration, RegistrationTeacherOnCourse, LeaveCourse, GetGrades, StudentStatForClass
+from states import Registration, RegistrationTeacherOnCourse, LeaveCourse, GetGrades, StudentStatForClass, GetTop5, \
+    GetCourseStats
 from states import RegisterForClasses
 import pandas as pd
 import math
@@ -115,7 +116,7 @@ async def answer_q1(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(Command("getmystats"), state=None)
-async def get_grades(message: types.Message):
+async def get_my_stats(message: types.Message):
     await message.reply("Статистику по какому предмету вы хотите получить?", reply_markup=course_markup)
     await StudentStatForClass.Q1.set()
 
@@ -138,7 +139,7 @@ async def answer_q1(message: types.Message, state: FSMContext):
         else:
             stats = 0
         # Отсылаем ответ пользователю
-        await message.answer("Ваша средняя оценка по курсу " + stats, reply_markup=ReplyKeyboardRemove())
+        await message.answer("Ваша средняя оценка по курсу: " + str(stats), reply_markup=ReplyKeyboardRemove())
     except:
         await message.answer('Что-то пошло не так....')
     await state.finish()
@@ -343,22 +344,28 @@ async def enter_test(message: types.Message):
 
 
 @dp.message_handler(Command("getcoursestats"))
-async def enter_test(message: types.Message):
-    try:
-        cid = get_cid_by_tid(message.from_user.id)
-        list_of_students = get_list_of_student_from_cours(cid)
-        list_of_marks = []
-        for student in list_of_students:
-            grades = get_my_grades(student[0], cid, 1)
-            if len(grades) == 0:
-                list_of_marks.append(0)
-            else:
-                list_of_marks.append(sum(grades)/len(grades))
+async def enter_course_stats(message: types.Message):
+    await message.reply("Выберете предмет для получения статистики", reply_markup=course_markup)
+    await GetCourseStats.Q1.set()
 
-        result = sum(list_of_marks)/len(list_of_marks)
-        await message.answer("Средняя оценка по курсу: "+result)
+
+@dp.message_handler(state=GetCourseStats.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        answer = message.text
+        cid = get_cid_by_name(answer)
+        list_of_students = get_list_of_student_from_cours(cid)
+        list_of_all_grades = []
+        for student in list_of_students:
+            list_of_all_grades = list_of_all_grades + [i[3] for i in get_my_grades(student[0], cid, 1)]
+        if len(list_of_all_grades) == 0:
+            await message.answer("По данному предмету не выставленны оценки")
+        else:
+            await message.answer("Средняя оценка по курсу: " +
+                                 str(sum(list_of_all_grades)/len(list_of_all_grades)))
     except:
         await message.answer('Что-то пошло не так...')
+    await state.finish()
 
 
 @dp.message_handler(Command("getnumberofstudents"))
@@ -371,27 +378,35 @@ async def enter_test(message: types.Message):
         await message.answer('Что-то пошло не так...')
 
 
-@dp.message_handler(Command("gettop5"))
-async def enter_test(message: types.Message):
+@dp.message_handler(Command("gettop5"), state=None)
+async def get_top5(message: types.Message):
+    await message.reply("Топ студентов по какому предмету вы хотите получить?", reply_markup=course_markup)
+    await GetTop5.Q1.set()
+
+
+@dp.message_handler(state=GetTop5.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
     try:
-        cid = get_cid_by_tid(message.from_user.id)
+        answer = message.text
+        cid = get_cid_by_name(answer)
         list_of_students = get_list_of_student_from_cours(cid)
         list_of_student_marks = []
         for student in list_of_students:
-            grades = get_my_grades(student[0], cid, 1)
+            grades = [i[3] for i in get_my_grades(student[0], cid, 1)]
             if len(grades) == 0:
                 list_of_student_marks.append((student[0], 0))
             else:
                 list_of_student_marks.append((student[0], sum(grades) / len(grades)))
 
-        top5 = sorted(list_of_student_marks, key=lambda res: res[1])
+        top5 = sorted(list_of_student_marks, key=lambda res: res[1], reverse=True)[:5]
         result = ""
         for res in top5:
             info = get_info_about_me(res[0])[0]
             result = result + f"{info[1]} {info[2]} : {res[1]}\n"
-        await message.answer("Топ 5 студентов п ооценкам:\n"+result)
+        await message.answer("Топ 5 студентов по оценкам:\n"+result)
     except:
         await message.answer('Что-то пошло не так...')
+    await state.finish()
 
 
 @dp.message_handler()
