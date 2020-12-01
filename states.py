@@ -23,6 +23,7 @@ class LeaveCourse(StatesGroup):
     Q1 = State()
     Q2 = State()
 
+
 class GetGrades(StatesGroup):
     Q1 = State()
     Q2 = State()
@@ -32,6 +33,11 @@ class GetGrades(StatesGroup):
 
 class StudentStatForClass(StatesGroup):
     Q1 = State()
+
+
+class GetCourseStats(StatesGroup):
+    Q1 = State()
+
 
 class GetTop5(StatesGroup):
     Q1 = State()
