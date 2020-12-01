@@ -397,7 +397,6 @@ async def answer_q1(message: types.Message, state: FSMContext):
                 list_of_student_marks.append((student[0], 0))
             else:
                 list_of_student_marks.append((student[0], sum(grades) / len(grades)))
-
         top5 = sorted(list_of_student_marks, key=lambda res: res[1], reverse=True)[:5]
         result = ""
         for res in top5:
