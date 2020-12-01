@@ -399,6 +399,7 @@ async def answer_q1(message: types.Message, state: FSMContext):
         await message.answer("Топ 5 студентов по оценкам:\n"+result)
     except:
         await message.answer('Что-то пошло не так...')
+    await state.finish()
 
 
 @dp.message_handler()
