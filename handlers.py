@@ -380,7 +380,7 @@ async def answer_q1(message: types.Message, state: FSMContext):
         answer = message.text
         cid = get_cid_by_name(answer)
         list_of_students = get_list_of_student_from_cours(cid)
-        await message.answer("Количество студентов на " + answer + " равно: " + len(list_of_students))
+        await message.answer("Количество студентов на " + answer + " равно: " + str(len(list_of_students)))
     except:
         await message.answer('Что-то пошло не так...')
     await state.finish()
