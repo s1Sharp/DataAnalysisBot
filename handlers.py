@@ -8,7 +8,7 @@ from queries import insert_new_student, check_telegramdi_in_student_course, get_
     check_course_pass, insert_new_teacher, insert_new_teacher_course, leave_course, get_info_about_me, get_cid_by_tid, \
     get_list_of_student_from_cours, assign_grades, get_my_grades
 from states import Registration, RegistrationTeacherOnCourse, LeaveCourse, GetGrades, StudentStatForClass, GetTop5, \
-    GetCourseStats
+    GetCourseStats, GetNumberStudents
 from states import RegisterForClasses
 import pandas as pd
 import math
@@ -35,7 +35,7 @@ async def start(message: types.Message):
                          "3)/assigngrades - выставить оценки из файла пункта (2)\n"
                          "4)/getjurnal - получить журнал с оценками\n"
                          "5)/getcoursestats - получить среднюю оценку по курсу\n"
-                         "6)getnumberofstudents - получить кол-во студентов\n"
+                         "6)/getnumberofstudents - получить кол-во студентов\n"
                          "7)/gettop5 - получить топ 5 студентов по оценкам\n")
 
 
@@ -369,13 +369,21 @@ async def answer_q1(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(Command("getnumberofstudents"))
-async def enter_test(message: types.Message):
+async def enter_get_number_of_students(message: types.Message):
+    await message.reply("По какому предмету вы хотите получить количество студентов?", reply_markup=course_markup)
+    await GetNumberStudents.Q1.set()
+
+
+@dp.message_handler(state=GetNumberStudents.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
     try:
-        cid = get_cid_by_tid(message.from_user.id)
+        answer = message.text
+        cid = get_cid_by_name(answer)
         list_of_students = get_list_of_student_from_cours(cid)
-        await message.answer("Количество студентов на курсе:\n"+len(list_of_students))
+        await message.answer("Количество студентов на " + answer + " равно: " + len(list_of_students))
     except:
         await message.answer('Что-то пошло не так...')
+    await state.finish()
 
 
 @dp.message_handler(Command("gettop5"), state=None)

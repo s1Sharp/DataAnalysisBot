@@ -39,5 +39,9 @@ class GetCourseStats(StatesGroup):
     Q1 = State()
 
 
+class GetNumberStudents(StatesGroup):
+    Q1 = State()
+
+
 class GetTop5(StatesGroup):
     Q1 = State()
