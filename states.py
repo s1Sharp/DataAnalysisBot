@@ -22,3 +22,26 @@ class RegistrationTeacherOnCourse(StatesGroup):
 class LeaveCourse(StatesGroup):
     Q1 = State()
     Q2 = State()
+
+
+class GetGrades(StatesGroup):
+    Q1 = State()
+    Q2 = State()
+    Q3 = State()
+    Q4 = State()
+
+
+class StudentStatForClass(StatesGroup):
+    Q1 = State()
+
+
+class GetCourseStats(StatesGroup):
+    Q1 = State()
+
+
+class GetNumberStudents(StatesGroup):
+    Q1 = State()
+
+
+class GetTop5(StatesGroup):
+    Q1 = State()

@@ -5,8 +5,10 @@ from keyboards.reply.choice_buttons import course_markup, simple_answer_markup, 
 from aiogram.types import ReplyKeyboardRemove
 from loader import dp
 from queries import insert_new_student, check_telegramdi_in_student_course, get_cid_by_name, join_to_course, \
-    check_course_pass, insert_new_teacher, insert_new_teacher_course, leave_course, get_info_about_me
-from states import Registration, RegistrationTeacherOnCourse, LeaveCourse
+    check_course_pass, insert_new_teacher, insert_new_teacher_course, leave_course, get_info_about_me, get_cid_by_tid, \
+    get_list_of_student_from_cours, assign_grades, get_my_grades
+from states import Registration, RegistrationTeacherOnCourse, LeaveCourse, GetGrades, StudentStatForClass, GetTop5, \
+    GetCourseStats, GetNumberStudents
 from states import RegisterForClasses
 import pandas as pd
 import math
@@ -22,12 +24,19 @@ async def start(message: types.Message):
 async def start(message: types.Message):
     await message.answer("*Команды для студентов:\n"
                          "1)/reg - Начать регистрацию пользователя\n"
-                         "2)/jointhecourse - поступить на курс\n"       
-                         "3)/infoaboutme - получить информацию о себе\n"        #в разработке
-                         "4)/getmygrades получить оценки по предмету\n"         #в разработке
+                         "2)/jointhecourse - поступить на курс\n"
+                         "3)/infoaboutme - получить информацию о себе\n"
+                         "4)/getmygrades получить оценки по предмету\n"
                          "5)/leavethecours - покинуть курс\n"
+                         "6)/getmystats - получить среднюю оценку по курсу\n"
                          "*Команды для преподавателя:\n"
-                         "1)/teacher - стать администратором курса\n")          #в разработке
+                         "1)/teacher - стать администратором курса\n"
+                         "2)/liststudents - получить excel файл с списком студентов, для выставления оценок\n"
+                         "3)/assigngrades - выставить оценки из файла пункта (2)\n"
+                         "4)/getjurnal - получить журнал с оценками\n"
+                         "5)/getcoursestats - получить среднюю оценку по курсу\n"
+                         "6)/getnumberofstudents - получить кол-во студентов\n"
+                         "7)/gettop5 - получить топ 5 студентов по оценкам\n")
 
 
 @dp.message_handler(Command("reg"), state=None)
@@ -106,6 +115,36 @@ async def answer_q1(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+@dp.message_handler(Command("getmystats"), state=None)
+async def get_my_stats(message: types.Message):
+    await message.reply("Статистику по какому предмету вы хотите получить?", reply_markup=course_markup)
+    await StudentStatForClass.Q1.set()
+
+
+@dp.message_handler(state=StudentStatForClass.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        # получаем ответ
+        answer = message.text
+        # проверяем входные параметры
+        cid = get_cid_by_name(answer)
+        grades = get_my_grades(message.from_user.id, cid, 1)
+        # Получаем оценки
+        g = []
+        for i in grades:
+            g.append(i[3])
+        # считаем среднее арифметическое
+        if len(g) != 0:
+            stats = sum(g)/len(g)
+        else:
+            stats = 0
+        # Отсылаем ответ пользователю
+        await message.answer("Ваша средняя оценка по курсу: " + str(stats), reply_markup=ReplyKeyboardRemove())
+    except:
+        await message.answer('Что-то пошло не так....')
+    await state.finish()
+
+
 @dp.message_handler(Command("infoaboutme"))
 async def enter_test(message: types.Message):
     info = get_info_about_me(message.from_user.id)[0]
@@ -141,6 +180,28 @@ async def answer_q2(message: types.Message, state: FSMContext):
             await message.answer('Вы покинули курс {}!'.format(answer1), reply_markup=ReplyKeyboardRemove())
         except:
             await message.answer('Что-то пошло не так....', reply_markup=ReplyKeyboardRemove())
+    await state.finish()
+
+
+@dp.message_handler(Command("getmygrades"), state=None)
+async def get_grades(message: types.Message):
+    await message.reply("Оценки по какому предмету вы хотите получить?", reply_markup=course_markup)
+    await GetGrades.Q1.set()
+
+
+@dp.message_handler(state=GetGrades.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        answer = message.text
+        cid = get_cid_by_name(answer)
+        grades = get_my_grades(message.from_user.id, cid, 1)
+        g = []
+        for i in grades:
+            g.append(i[3])
+        strgrades = str(g)
+        await message.answer("Ваши оценки " + strgrades, reply_markup=ReplyKeyboardRemove())
+    except:
+        await message.answer('Что-то пошло не так....')
     await state.finish()
 
 
@@ -197,6 +258,164 @@ async def answer_q1(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+@dp.message_handler(Command("liststudents"))
+async def enter_test(message: types.Message):
+    try:
+        cid = get_cid_by_tid(message.from_user.id)
+        list_of_students = get_list_of_student_from_cours(cid)
+        list_of_surnames = []
+        list_of_idcards = []
+        list_of_groupnumbers = []
+        list_of_grades = []
+        for i in list_of_students:
+            a = get_info_about_me(i[0])[0]
+            list_of_surnames.append(a[2])
+            list_of_idcards.append(a[3])
+            list_of_groupnumbers.append(a[4])
+            list_of_grades.append('')
+        df = pd.DataFrame(
+            {'Фамилия': list_of_surnames, 'Номер студенческого': list_of_idcards, 'Группа': list_of_groupnumbers,
+             'Оценка': list_of_grades})
+        df.to_excel(r"Оценки.xlsx")
+        await message.answer("В папку проекта сохранен Excel файл 'Оценки', откройте его и выставите оценки, "
+                             "после сохраните "
+                             "изменения и вызовите команду '/assigngrades'")
+    except:
+        await message.answer('Что-то пошло не так...')
+
+
+@dp.message_handler(Command("assigngrades"))
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        df2 = pd.read_excel(r"Оценки.xlsx")
+        grades = []
+        for i in df2['Оценка']:
+            grades.append(i)
+        cid = get_cid_by_tid(message.from_user.id)
+        list_of_students = get_list_of_student_from_cours(cid)
+        for i in range(0, len(list_of_students)):
+            try:
+                if math.isnan(grades[i]):
+                    assign_grades(list_of_students[i][0], cid, 0)
+                else:
+                    assign_grades(list_of_students[i][0], cid, grades[i])
+            except:
+                pass
+        await message.answer('Оценки выставлены!')
+    except:
+        await message.answer('Не удалось найти файл с оценками')
+
+
+@dp.message_handler(Command("getjurnal"))
+async def enter_test(message: types.Message):
+    try:
+        cid = get_cid_by_tid(message.from_user.id)
+        list_of_students = get_list_of_student_from_cours(cid)
+        grades = []
+        students_surnames = []
+        students_idcards = []
+        students_groups = []
+        for i in list_of_students:
+            g = []
+            student = get_info_about_me(i[0])[0]
+            students_surnames.append(student[2])
+            students_idcards.append(student[3])
+            students_groups.append(student[4])
+            for j in get_my_grades(i[0], cid, 1):
+                g.append(j[3])
+            grades.append(g)
+        lens = []
+        for i in grades:
+            lens.append(len(i))
+        max_len = max(lens)
+        for j in grades:
+            if len(j) < max_len:
+                while len(j) < max_len:
+                    j.insert(0, 0)
+        a = np.array(grades)
+        df_grades = pd.DataFrame(a)
+        df = pd.DataFrame(
+            {'Фамилия': students_surnames, 'Номер студенческого': students_idcards, 'Группа': students_groups})
+        answer = pd.merge(df, df_grades, left_index=True, right_index=True)
+        answer.to_excel(r"Журнал.xlsx")
+        await message.answer
+    except:
+        await message.answer('....')
+
+
+@dp.message_handler(Command("getcoursestats"))
+async def enter_course_stats(message: types.Message):
+    await message.reply("Выберете предмет для получения статистики", reply_markup=course_markup)
+    await GetCourseStats.Q1.set()
+
+
+@dp.message_handler(state=GetCourseStats.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        answer = message.text
+        cid = get_cid_by_name(answer)
+        list_of_students = get_list_of_student_from_cours(cid)
+        list_of_all_grades = []
+        for student in list_of_students:
+            list_of_all_grades = list_of_all_grades + [i[3] for i in get_my_grades(student[0], cid, 1)]
+        if len(list_of_all_grades) == 0:
+            await message.answer("По данному предмету не выставленны оценки")
+        else:
+            await message.answer("Средняя оценка по курсу: " +
+                                 str(sum(list_of_all_grades)/len(list_of_all_grades)))
+    except:
+        await message.answer('Что-то пошло не так...')
+    await state.finish()
+
+
+@dp.message_handler(Command("getnumberofstudents"))
+async def enter_get_number_of_students(message: types.Message):
+    await message.reply("По какому предмету вы хотите получить количество студентов?", reply_markup=course_markup)
+    await GetNumberStudents.Q1.set()
+
+
+@dp.message_handler(state=GetNumberStudents.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        answer = message.text
+        cid = get_cid_by_name(answer)
+        list_of_students = get_list_of_student_from_cours(cid)
+        await message.answer("Количество студентов на " + answer + " равно: " + str(len(list_of_students)))
+    except:
+        await message.answer('Что-то пошло не так...')
+    await state.finish()
+
+
+@dp.message_handler(Command("gettop5"), state=None)
+async def get_top5(message: types.Message):
+    await message.reply("Топ студентов по какому предмету вы хотите получить?", reply_markup=course_markup)
+    await GetTop5.Q1.set()
+
+
+@dp.message_handler(state=GetTop5.Q1)
+async def answer_q1(message: types.Message, state: FSMContext):
+    try:
+        answer = message.text
+        cid = get_cid_by_name(answer)
+        list_of_students = get_list_of_student_from_cours(cid)
+        list_of_student_marks = []
+        for student in list_of_students:
+            grades = [i[3] for i in get_my_grades(student[0], cid, 1)]
+            if len(grades) == 0:
+                list_of_student_marks.append((student[0], 0))
+            else:
+                list_of_student_marks.append((student[0], sum(grades) / len(grades)))
+        top5 = sorted(list_of_student_marks, key=lambda res: res[1], reverse=True)[:5]
+        result = ""
+        for res in top5:
+            info = get_info_about_me(res[0])[0]
+            result = result + f"{info[1]} {info[2]} : {res[1]}\n"
+        await message.answer("Топ 5 студентов по оценкам:\n"+result)
+    except:
+        await message.answer('Что-то пошло не так...')
+    await state.finish()
+
+
 @dp.message_handler()
 async def bullshit(message: types.Message):
     await message.answer("Пиши по делу)")
@@ -206,3 +425,4 @@ async def bullshit(message: types.Message):
 
 # Вариант завершения 3 - без стирания данных в data
 # await state.reset_state(with_data=False)
+
