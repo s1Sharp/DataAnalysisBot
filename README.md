@@ -11,7 +11,8 @@ python -m pip install -r requirements.txt
 ===========================================================================================
 after those steps add value of your token after those steps 
 add value of your token to environment variable with name <token>
-===========================================================================================Main menu of bot
+===========================================================================================
+  Main menu of bot
 
 *Команды для студентов:
 1)/reg - Начать регистрацию пользователя
