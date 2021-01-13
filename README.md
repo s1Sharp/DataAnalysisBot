@@ -2,15 +2,16 @@
 
 Installation
 Clone the repository from GitHub, then create a virtual environment, and install all the dependencies.
-====================================================******************==================================================
+
+====================================================******************==========================
 git clone https://github.com/s1Sharp/DataAnalysisBot.git
 python3 -m venv env
 source env/bin/activate
 python -m pip install -r requirements.txt
-====================================================******************==================================================
+====================================================******************==========================
 after those steps add value of your token after those steps 
 add value of your token to environment variable with name <token>
-====================================================******************==================================================
+====================================================******************==========================
 Main menu of bot
 
 *Команды для студентов:
