@@ -2,8 +2,7 @@
 
 Installation
 Clone the repository from GitHub, then create a virtual environment, and install all the dependencies.
-
-============================================================================================
+===========================================================================================
 git clone https://github.com/s1Sharp/DataAnalysisBot.git
 python3 -m venv env
 source env/bin/activate
